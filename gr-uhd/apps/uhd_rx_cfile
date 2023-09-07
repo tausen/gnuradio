@@ -26,6 +26,7 @@ from optparse import OptionParser
 
 n2s = eng_notation.num_to_str
 COMMAND_DELAY = .2
+CLOCK_SOURCE_OPTIONS = ('default', 'internal', 'external', 'mimo', 'gpsdo')
 
 
 class rx_cfile_block(gr.top_block):
@@ -70,6 +71,9 @@ class rx_cfile_block(gr.top_block):
                 channels=self.channels,
             )
         )
+        # Set clock source:
+        if options.clock_source != "default":
+            self._u.set_clock_source(options.clock_source, 0)
         # Set the subdevice spec:
         if options.spec:
             for mb_idx in range(self._u.get_num_mboards()):
@@ -257,6 +261,8 @@ def get_options():
                       help="Show asynchronous message notifications from UHD [default=%default]")
     parser.add_option("", "--sync", type="choice", choices=('default', 'pps'),
                       default='default', help="Set to 'pps' to sync devices to PPS instead of internal.")
+    parser.add_option("", "--clock-source", type="choice", choices=CLOCK_SOURCE_OPTIONS,
+                      default='default', help=f"Choose clock source, one of: {CLOCK_SOURCE_OPTIONS}")
     (options, args) = parser.parse_args()
     if len(args) != 1:
         parser.print_help()
